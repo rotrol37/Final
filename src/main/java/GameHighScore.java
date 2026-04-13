@@ -50,6 +50,20 @@ public class GameHighScore {
     }
 
     /**
+     * Returns a description of the high score.
+     *
+     * @return the display string as a String
+     */
+    public String getDisplayString() {
+        final StringBuilder display;
+        display = new StringBuilder();
+        display.append(getHighScoreName());
+        display.append(" : ");
+        display.append(getHighScore());
+        return display.toString();
+    }
+
+    /**
      * Returns true if the given score beats the current high score.
      *
      * @param score the score to check as an int
