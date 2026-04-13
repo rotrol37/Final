@@ -1,9 +1,11 @@
+import game.InputHandler;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import scene.GameScene;
 
 
 public class DeadlineDefenderGame extends Application {

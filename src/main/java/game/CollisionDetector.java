@@ -1,3 +1,5 @@
+package game;
+
 import enums.CollisionResult;
 import objects.Ball;
 import objects.Task;

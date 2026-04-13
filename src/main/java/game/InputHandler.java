@@ -1,3 +1,5 @@
+package game;
+
 import enums.Direction;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;

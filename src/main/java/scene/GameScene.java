@@ -1,3 +1,5 @@
+package scene;
+
 import enums.CollisionResult;
 import enums.GameState;
 import javafx.scene.canvas.Canvas;

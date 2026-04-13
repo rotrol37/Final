@@ -1,3 +1,5 @@
+package scene;
+
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.*;
 import javafx.scene.text.Font;
