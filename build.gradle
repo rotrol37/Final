@@ -1,0 +1,151 @@
+plugins {
+    id 'application'
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.4.8'
+    id 'pmd'
+    id 'jacoco'
+}
+
+ext {
+    javaVersion   = 25
+    javafxVersion = '25.0.1'
+
+    // Pin tool versions for reproducibility across student machines
+    checkstyleVer = '13.0.0'
+    pmdVer        = '7.20.0'
+    jacocoVer     = '0.8.14'
+    junitBomVer   = '5.14.2'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+application {
+    mainClass = 'DeadlineDefenderGame'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = javafxVersion
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+/* -----------------------------
+   Compilation hygiene (helpful in teaching repos)
+   ----------------------------- */
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:all']
+}
+
+/* -----------------------------
+   JUnit 5
+   ----------------------------- */
+dependencies {
+    testImplementation platform("org.junit:junit-bom:${junitBomVer}")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+
+    // Student-friendly: don’t fail the build if tests fail.
+    ignoreFailures = true
+
+    testLogging { events "passed", "skipped", "failed" }
+
+    finalizedBy jacocoTestReport
+}
+
+/* -----------------------------
+   JaCoCo coverage report (always produce it)
+   ----------------------------- */
+jacoco { toolVersion = jacocoVer }
+
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect { dir ->
+            fileTree(dir: dir, exclude: [
+                    '**/*Driver*',
+                    '**/module-info.class'
+            ])
+        }))
+    }
+}
+
+/* -----------------------------
+   Checkstyle (reports, but don’t block students)
+   ----------------------------- */
+checkstyle {
+    toolVersion = checkstyleVer
+    // Student-friendly: don’t fail the build on violations
+    ignoreFailures = true
+}
+
+// Usually not worth running checkstyle on tests for intro courses
+tasks.named('checkstyleTest') { enabled = false }
+
+// Ensure reports are produced
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        html.required = true
+        xml.required = false
+    }
+}
+
+/* -----------------------------
+   SpotBugs (reports, but don’t block students)
+   ----------------------------- */
+spotbugs {
+    ignoreFailures = true
+    showStackTraces = true
+    showProgress = true
+}
+
+tasks.named('spotbugsTest') { enabled = false }
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    ignoreFailures = true
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+    }
+}
+
+/* -----------------------------
+   PMD (reports, but don’t block students)
+   ----------------------------- */
+pmd {
+    toolVersion = pmdVer
+    ignoreFailures = true
+    consoleOutput = true
+    ruleSets = [
+            "category/java/errorprone.xml",
+            "category/java/bestpractices.xml"
+    ]
+}
+
+tasks.named('pmdTest') { enabled = false }
+
+/* -----------------------------
+   A single “courseCheck” task students can run.
+   It always completes and leaves reports behind.
+   ----------------------------- */
+tasks.register('courseCheck') {
+    group = 'verification'
+    description = 'Runs tests + static analysis and always produces reports (non-failing).'
+    dependsOn 'test', 'checkstyleMain', 'spotbugsMain', 'pmdMain', 'jacocoTestReport'
+}
